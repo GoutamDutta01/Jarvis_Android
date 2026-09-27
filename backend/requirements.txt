@@ -1,0 +1,2 @@
+# Jarvis backend currently uses Python standard-library HTTP and JSON modules only.
+# Add provider SDKs here only if you choose to use one.
