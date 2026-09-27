@@ -1,0 +1,19 @@
+name: Build Jarvis backend
+
+on:
+  push:
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend-docker.yml'
+  pull_request:
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend-docker.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build backend image
+        run: docker build -t jarvis-backend ./backend
