@@ -14,9 +14,24 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "0.1.0"
+        buildConfigField("String", "JARVIS_BACKEND_URL", "\"http://10.0.2.2:8080\"")
     }
 
-    buildFeatures { compose = true }
+    buildFeatures {
+        compose = true
+        buildConfig = true
+    }
+
+    buildTypes {
+        debug {
+            buildConfigField("String", "JARVIS_BACKEND_URL", "\"http://10.0.2.2:8080\"")
+        }
+        release {
+            // Replace with the deployed HTTPS backend URL before release builds.
+            buildConfigField("String", "JARVIS_BACKEND_URL", "\"https://YOUR-JARVIS-BACKEND.example.com\"")
+            isMinifyEnabled = true
+        }
+    }
 }
 
 dependencies {
