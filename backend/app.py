@@ -2,11 +2,7 @@ import json
 import os
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-ALLOWED = {
-    "open_app", "google_search", "youtube_search", "maps_search", "navigate",
-    "call", "take_photo", "record_video", "play_pause", "next_track",
-    "previous_track", "set_alarm", "open_settings", "home", "back"
-}
+from llm_provider import plan_with_openai, validate_plan
 
 class Handler(BaseHTTPRequestHandler):
     def _json(self, status, payload):
@@ -26,17 +22,12 @@ class Handler(BaseHTTPRequestHandler):
             command = str(data.get("command", "")).strip()
             if not command or len(command) > 1000:
                 return self._json(400, {"error": "invalid_command"})
-
-            # Provider integration belongs here. Keep credentials in server
-            # environment variables, never in the Android APK or repository.
-            # Until a provider adapter is configured, fail closed instead of
-            # pretending to execute an LLM plan.
             if not os.getenv("LLM_PROVIDER_API_KEY"):
                 return self._json(503, {"error": "llm_provider_not_configured"})
-
-            return self._json(501, {"error": "provider_adapter_not_implemented"})
-        except (ValueError, json.JSONDecodeError):
-            return self._json(400, {"error": "invalid_json"})
+            return self._json(200, validate_plan(plan_with_openai(command)))
+        except Exception:
+            # Do not expose provider errors or credentials to the client.
+            return self._json(502, {"error": "planning_failed"})
 
     def log_message(self, *_):
         pass
