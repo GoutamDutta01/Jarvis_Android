@@ -13,9 +13,9 @@ For set_alarm, value must be HH:MM|label. If required information is missing, re
 '''
 
 
-def plan_with_openai(command: str) -> dict:
+def plan_with_openrouter(command: str) -> dict:
     api_key = os.environ["LLM_PROVIDER_API_KEY"]
-    model = os.getenv("LLM_MODEL", "gpt-4o-mini")
+    model = os.getenv("LLM_MODEL", "google/gemma-4-26b-a4b-it:free")
     payload = {
         "model": model,
         "temperature": 0,
@@ -26,15 +26,16 @@ def plan_with_openai(command: str) -> dict:
         ],
     }
     request = Request(
-        "https://api.openai.com/v1/chat/completions",
+        "https://openrouter.ai/api/v1/chat/completions",
         data=json.dumps(payload).encode(),
         headers={
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json",
+            "X-Title": "Jarvis Android",
         },
         method="POST",
     )
-    with urlopen(request, timeout=30) as response:
+    with urlopen(request, timeout=45) as response:
         data = json.loads(response.read().decode())
     content = data["choices"][0]["message"]["content"]
     return json.loads(content)
