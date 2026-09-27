@@ -20,13 +20,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.goutamdutta.jarvis.ai.JarvisCommandExecutor
+import com.goutamdutta.jarvis.ai.JarvisBackendClient
+import com.goutamdutta.jarvis.ai.JarvisPlanExecutor
 import com.goutamdutta.jarvis.voice.JarvisSpeechController
 
 class MainActivity : ComponentActivity() {
     private var status by mutableStateOf("Ready")
     private lateinit var speech: JarvisSpeechController
-    private lateinit var executor: JarvisCommandExecutor
+    private lateinit var localExecutor: JarvisPlanExecutor
+    private lateinit var backend: JarvisBackendClient
 
     private val microphonePermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         if (granted) listen() else status = "Microphone permission is required."
@@ -34,9 +36,15 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        executor = JarvisCommandExecutor(this)
+        localExecutor = JarvisPlanExecutor(this)
+        backend = JarvisBackendClient(BuildConfig.JARVIS_BACKEND_URL) { plan ->
+            runOnUiThread {
+                status = if (plan == null) "AI planning failed; try again." else localExecutor.execute(plan)
+            }
+        }
         speech = JarvisSpeechController(this, onCommand = { command ->
-            status = executor.execute(command)
+            status = "Planning: $command"
+            backend.plan(command)
         }, onError = { status = it })
 
         setContent {
@@ -50,7 +58,6 @@ class MainActivity : ComponentActivity() {
                     }) { Text("Speak Command") }
                     Button(onClick = { startActivity(Intent(Settings.ACTION_VOICE_INPUT_SETTINGS)) }) { Text("Voice Assistant Settings") }
                     Button(onClick = { startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)) }) { Text("Accessibility Settings") }
-                    Button(onClick = { startActivity(Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS")) }) { Text("Notification Access") }
                 }
             }
         }
@@ -63,6 +70,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onDestroy() {
         speech.destroy()
+        backend.shutdown()
         super.onDestroy()
     }
 }
