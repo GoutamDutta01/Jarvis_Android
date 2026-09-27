@@ -27,8 +27,7 @@ android {
             buildConfigField("String", "JARVIS_BACKEND_URL", "\"http://10.0.2.2:8080\"")
         }
         release {
-            // Replace with the deployed HTTPS backend URL before release builds.
-            buildConfigField("String", "JARVIS_BACKEND_URL", "\"https://YOUR-JARVIS-BACKEND.example.com\"")
+            buildConfigField("String", "JARVIS_BACKEND_URL", "\"https://jarvis-android-5h7g.onrender.com\"")
             isMinifyEnabled = true
         }
     }
