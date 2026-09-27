@@ -27,4 +27,30 @@ class ActionRouter(private val context: Context) {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }); true
     }.getOrDefault(false)
+
+    fun openApp(appName: String): Boolean {
+        val pm = context.packageManager
+        val packages = pm.getInstalledApplications(0)
+        val target = packages.firstOrNull {
+            pm.getApplicationLabel(it).toString().equals(appName, ignoreCase = true)
+        } ?: packages.firstOrNull {
+            pm.getApplicationLabel(it).toString().contains(appName, ignoreCase = true)
+        } ?: return false
+        val launch = pm.getLaunchIntentForPackage(target.packageName) ?: return false
+        launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        context.startActivity(launch)
+        return true
+    }
+
+    fun callContact(nameOrNumber: String): Boolean {
+        val uri = if (nameOrNumber.matches(Regex("[+0-9 ()-]{5,}"))) {
+            Uri.parse("tel:${Uri.encode(nameOrNumber)}")
+        } else return false
+        return runCatching {
+            context.startActivity(Intent(Intent.ACTION_DIAL, uri).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            true
+        }.getOrDefault(false)
+    }
+
+    fun navigate(destination: String): Boolean = openUrl("google.navigation:q=${Uri.encode(destination)}")
 }
