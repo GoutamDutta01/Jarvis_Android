@@ -7,6 +7,11 @@ class JarvisIntentParser {
         return when {
             lower == "home" || lower == "go home" -> JarvisIntent.Home
             lower == "back" || lower == "go back" -> JarvisIntent.Back
+            lower == "take a photo" || lower == "take photo" || lower == "open camera" -> JarvisIntent.TakePhoto
+            lower == "record video" || lower == "start recording" -> JarvisIntent.RecordVideo
+            lower == "play music" || lower == "play" || lower == "pause" || lower == "pause music" -> JarvisIntent.PlayPause
+            lower == "next song" || lower == "next track" || lower == "skip song" -> JarvisIntent.NextTrack
+            lower == "previous song" || lower == "previous track" || lower == "last song" -> JarvisIntent.PreviousTrack
             lower == "open settings" || lower == "settings" -> JarvisIntent.OpenSettings
             lower.startsWith("open ") -> JarvisIntent.OpenApp(text.substring(5).trim())
             lower.startsWith("google search ") -> JarvisIntent.GoogleSearch(text.substring(14).trim())
